@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -18,45 +19,44 @@ fn main() {
             return;
         }
     };
-    if env::args().any(|a| a == "-a") {
-        for entry in entries {
-            if let Ok(entry) = entry {
-                let path = entry.path();
-                let is_dir = path.is_dir();
-
-                list.push((path, is_dir));
-            }
-        }
-
-        for (path, is_dir) in &list {
-            let name = path.file_name().unwrap_or_default().to_string_lossy();
-
-            if *is_dir {
-                println!("{}/", name);
-            } else {
-                println!("{}", name);
-            }
-        }
-    } else {
-        for entry in entries {
-            if let Ok(entry) = entry {
-                let path = entry.path();
-                let is_dir = path.is_dir();
+    for entry in entries {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            let is_dir = path.is_dir();
+            if !env::args().any(|a| a == "-a") {
                 let name = path.file_name().unwrap_or_default().to_string_lossy();
-
                 if name.starts_with('.') {
                     continue;
                 }
-
-                list.push((path, is_dir));
             }
+            list.push((path, is_dir));
         }
-
-        for (path, is_dir) in &list {
-            let name = path.file_name().unwrap_or_default().to_string_lossy();
+    }
+    for (path, is_dir) in &list {
+        let name = path.file_name().unwrap_or_default().to_string_lossy();
+        if env::args().any(|l| l == "-l") {
+            let meta = fs::metadata(&path).unwrap();
 
             if *is_dir {
-                println!("{}/", name);
+                println!(
+                    "{:?} {} {:?} {}/",
+                    meta.permissions(),
+                    meta.len(),
+                    meta.modified(),
+                    name.blue()
+                );
+            } else {
+                println!(
+                    "{:?} {} {:?} {}",
+                    meta.permissions(),
+                    meta.len(),
+                    meta.modified(),
+                    name
+                );
+            }
+        } else {
+            if *is_dir {
+                println!("{}/", name.blue());
             } else {
                 println!("{}", name);
             }
