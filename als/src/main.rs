@@ -4,6 +4,11 @@ use std::fs;
 use std::path::PathBuf;
 
 fn main() {
+    if env::args().any(|h| h == "-h") {
+        println!("-a -> show hidden files");
+        println!("-l -> long list format");
+    }
+
     let dir = match env::current_dir() {
         Ok(e) => e,
         Err(e) => {
